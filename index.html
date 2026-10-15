@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>物流查询 | V5 Medical</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:#1f2937;background:#f7f9fc;line-height:1.7}
+header{background:linear-gradient(135deg,#064e3b,#047857);color:#fff;padding:44px 20px;text-align:center}
+header h1{font-size:1.7rem}
+header p{opacity:.85;margin-top:8px;font-size:.93rem}
+main{max-width:900px;margin:0 auto;padding:32px 20px 60px}
+section{margin-bottom:40px}
+h2{font-size:1.25rem;border-left:5px solid #047857;padding-left:12px;margin-bottom:18px;color:#064e3b}
+.searchbox{background:#fff;border:1px solid #e3e9f2;border-radius:14px;padding:26px;box-shadow:0 2px 10px rgba(4,120,87,.08)}
+.searchbox .row{display:flex;gap:10px;flex-wrap:wrap}
+.searchbox input{flex:1;min-width:220px;padding:12px 14px;border:1px solid #d1d5db;border-radius:10px;font-size:1rem}
+.searchbox button{padding:12px 28px;background:#047857;color:#fff;border:none;border-radius:10px;font-size:1rem;cursor:pointer}
+.hint{font-size:.83rem;color:#6b7280;margin-top:10px}
+.timeline{margin-top:20px;display:none}
+.timeline.show{display:block}
+.node{display:flex;gap:14px;margin-bottom:2px}
+.node .dot{width:14px;height:14px;border-radius:50%;background:#047857;margin-top:6px;flex-shrink:0}
+.node .line{border-left:2px solid #d1fae5;margin-left:6px;padding-bottom:22px;padding-left:20px}
+.node:last-child .line{border-left:none;padding-bottom:0}
+.node .t{font-size:.78rem;color:#6b7280}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+.card{background:#fff;border:1px solid #e3e9f2;border-radius:12px;padding:18px;box-shadow:0 2px 8px rgba(4,120,87,.06)}
+.card h3{font-size:.98rem;color:#064e3b;margin-bottom:8px}
+.card a{color:#047857;font-size:.88rem;text-decoration:none}
+.card a:hover{text-decoration:underline}
+.note{background:#fffbe6;border:1px solid #f5d76e;border-radius:10px;padding:14px 18px;font-size:.88rem;color:#6b4e00}
+footer{text-align:center;padding:24px;color:#6b7280;font-size:.8rem;background:#fff;border-top:1px solid #e3e9f2}
+</style>
+</head>
+<body>
+<header>
+<h1>物流查询</h1>
+<p>Shipment Tracking · SC 供应链与交付</p>
+</header>
+<main>
+
+<section>
+<h2>运单查询</h2>
+<div class="searchbox">
+<div class="row">
+<input id="no" placeholder="输入运单号 / 提单号 / 集装箱号">
+<button onclick="track()">查询</button>
+</div>
+<div class="hint">演示：输入 <strong>SC20261015DEMO</strong> 查看示例轨迹。正式轨迹接口接入中，当前以货代回函为准。</div>
+<div class="timeline" id="tl"></div>
+</div>
+</section>
+
+<section>
+<h2>船司 / 快递官网直查</h2>
+<div class="grid">
+<div class="card"><h3>马士基 Maersk</h3><a href="https://www.maersk.com/tracking" target="_blank" rel="noopener">Track &amp; Trace →</a></div>
+<div class="card"><h3>中远海运 COSCO</h3><a href="https://elines.coscoshipping.com/ebusiness/cargoTracking" target="_blank" rel="noopener">货物跟踪 →</a></div>
+<div class="card"><h3>DHL</h3><a href="https://www.dhl.com/cn-zh/home/tracking.html" target="_blank" rel="noopener">快件追踪 →</a></div>
+<div class="card"><h3>UPS</h3><a href="https://www.ups.com/track" target="_blank" rel="noopener">包裹追踪 →</a></div>
+<div class="card"><h3>FedEx</h3><a href="https://www.fedex.com/fedextrack/" target="_blank" rel="noopener">货件追踪 →</a></div>
+<div class="card"><h3>17TRACK（多承运商）</h3><a href="https://www.17track.net/zh-cn" target="_blank" rel="noopener">综合查询 →</a></div>
+</div>
+</section>
+
+<section>
+<h2>合作货代</h2>
+<div class="grid">
+<div class="card"><h3>百川天下（曹磊）</h3><p style="font-size:.88rem;color:#374151">土耳其专线双清包税到门。不做埃及线（2026-10-14 确认）。</p></div>
+<div class="card"><h3>Plan B 备选货代</h3><p style="font-size:.88rem;color:#374151">DTFU 等 4 家，方案就绪，待 CEO 拍板后启用。</p></div>
+</div>
+</section>
+
+<section>
+<h2>清关须知</h2>
+<div class="note">
+<strong>埃及：</strong>海运强制 ACID / Nafeza 预申报；医用缝合线 HS 3006.10，关税约 5%（待核实）、VAT 14%；硬门槛为 EDA 进口商名册 + 产品进口批准。<br>
+<strong>土耳其：</strong>额外关税政策变动频繁（2026-07-11 第 11508 号总统令），适用税率以出货前核实为准。
+</div>
+</section>
+
+</main>
+<footer>V5 Medical · 苏州维五医疗科技有限公司 · SC 供应链与交付</footer>
+
+<script>
+const demo=[
+["2026-10-15 14:20","货物到达目的港（示例数据）"],
+["2026-10-12 09:05","船舶离港 — 上海港"],
+["2026-10-10 16:40","集装箱已装船，提单已签发"],
+["2026-10-08 11:15","货物送达指定仓库，报关放行"],
+["2026-10-06 08:30","货代已揽收，运单创建"]
+];
+function track(){
+  const no=document.getElementById("no").value.trim();
+  const tl=document.getElementById("tl");tl.innerHTML="";tl.classList.remove("show");
+  if(!no){alert("请输入运单号");return;}
+  if(no.toUpperCase()==="SC20261015DEMO"){
+    tl.classList.add("show");
+    demo.forEach(d=>{
+      const el=document.createElement("div");el.className="node";
+      el.innerHTML="<div><div class='dot'></div></div><div class='line'><div>"+d[1]+"</div><div class='t'>"+d[0]+"</div></div>";
+      tl.appendChild(el);
+    });
+  }else{
+    tl.classList.add("show");
+    tl.innerHTML="<div class='note'>单号 <strong>"+no.replace(/</g,"&lt;")+"</strong> 暂无轨迹数据。正式轨迹接口接入中，请使用上方船司 / 快递官网直查，或联系 SC 供应链查询。</div>";
+  }
+}
+</script>
+</body>
+</html>
